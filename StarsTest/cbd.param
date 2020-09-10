@@ -1,0 +1,94 @@
+%  Relevant files
+
+InitCondFile  	   initCond/outbeg
+OutputDir          result/
+
+RestartFile        restart
+SnapshotFileBase   out
+
+%  Caracteristics of run
+
+TimeBegin           0.0  % Begin of the simulation
+TimeMax	            10.0       % End of the simulation
+
+% Output frequency
+
+TimeBetSnapshot        1.0
+TimeOfFirstSnapshot    0.0
+
+% Accuracy of time integration
+
+ErrTolIntAccuracy      0.05
+CourantFac             0.15     
+MaxSizeTimestep        0.001
+MinSizeTimestep        1e-4
+
+% Tree algorithm, force accuracy, domain update frequency
+
+ErrTolTheta            0.8          
+TypeOfOpeningCriterion 0
+ErrTolForceAcc         0.0005
+TreeDomainUpdateFrequency    0.1
+
+%  Further parameters of SPH
+
+DesNumNgb              30
+MaxNumNgbDeviation     2
+ArtBulkViscConst       1.0
+InitGasTemp            0          % always ignored if set to 0 
+MinGasTemp             0    
+
+% Memory allocation
+
+PartAllocFactor       2.5
+TreeAllocFactor       5
+BufferSize            500          % in MByte
+
+% System of units
+
+UnitVelocity_in_cm_per_s 4.756137e+05
+UnitMass_in_g 5.088373e+31
+UnitLength_in_cm 1.500949e+13
+GravityConstantInternal  0
+ 
+% Softening lengths
+
+MinGasHsml 0.0
+HsmlConstant 0.04
+ 
+SofteningStars     0.0001
+
+DustGasMechStep    0.01
+DustSize	   0.1 %cm
+DustRho			1 %g/cm^3
+
+AccretionRadius  1.0
+BarrierDistance  10.0
+StarMassIndicator 0.0001
+CentralTemperature 6000 % in Kelvin
+CentralRadius 1.0 %in solar radius
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

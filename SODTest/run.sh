@@ -1,0 +1,2 @@
+mpicc -c -O2 main.c allvars.c endrun.c restart.c begrun.c allocate.c system.c init.c read_ic.c io.c gravtree.c ngb.c forcetree.c peano.c domain.c run.c predict.c accel.c density.c hydra.c timestep.c accretion.c interact.c -DNOGRAVITY -DSPH_BND_PARTICLES -DDIM1 -DHSMLCONSTANT 
+mpicc main.o allvars.o endrun.o restart.o begrun.o allocate.o system.o init.o read_ic.o io.o gravtree.o ngb.o forcetree.o peano.o domain.o run.o predict.o accel.o density.o hydra.o timestep.o accretion.o interact.o -g -lm -o main.exe

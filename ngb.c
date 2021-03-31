@@ -33,7 +33,7 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int* startnode, int pt
     FLOAT hdiff;
     FLOAT searchmin[3], searchmax[3];
     struct NODE* this;
-
+    hdiff=0;
     for (k = 0; k < 3; k++) /* cube-box window */
     {
         searchmin[k] = searchcenter[k] - hsml;
@@ -42,7 +42,7 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int* startnode, int pt
 
     numngb = 0;
     no = *startnode;
-
+    hdiff=0; 
     while (no >= 0)
     {
         if (no < All.MaxPart) /* single particle */
@@ -52,8 +52,9 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int* startnode, int pt
 
             if (P[p].Type != ptype)
                 continue;
-
+#ifndef HSMLCONSTANT
             hdiff = SphP[p].Hsml - hsml;
+#endif
             if (hdiff < 0)
                 hdiff = 0;
             if (P[p].Pos[0] < (searchmin[0] - hdiff))
@@ -86,7 +87,9 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int* startnode, int pt
             }
 
             this = &Nodes[no];
+#ifndef HSMLCONSTANT
             hdiff = Extnodes[no].hmax - hsml;
+#endif
             if (hdiff < 0)
                 hdiff = 0;
 
@@ -209,13 +212,11 @@ int ngb_treefind_cell(FLOAT searchcenter[3], FLOAT hsml, int* startnode, int pty
     int no, p;
     struct NODE* this;
     FLOAT searchmin[3], searchmax[3];
-    for (k = 0; k < 2; k++) /* cube-box window */
+    for (k = 0; k < 3; k++) /* cube-box window */
     {
         searchmin[k] = searchcenter[k] - hsml;
         searchmax[k] = searchcenter[k] + hsml;
     }
-    searchmin[2] = searchcenter[2] - hsml/5.;
-    searchmax[2] = searchcenter[2] + hsml/5.;
     numngb = 0;
     no = *startnode;
 
@@ -265,6 +266,150 @@ int ngb_treefind_cell(FLOAT searchcenter[3], FLOAT hsml, int* startnode, int pty
             if ((this->center[2] - 0.5 * this->len) > (searchmax[2]))
                 continue;
             no = this->u.d.nextnode; /* ok, we need to open the node */
+        }
+    }
+
+    *startnode = -1;
+    return numngb;
+}
+
+/*! This function returns neighbours with distance <= hsml and returns them in
+ *  Ngblist. Actually, particles in a box of half side length hsml are
+ *  returned, i.e. the reduction to a sphere still needs to be done in the
+ *  calling routine.
+ */
+
+int ngb_treefind_rad(FLOAT searchcenter[3], int* startnode, int ptype)
+{
+    FLOAT searchRmin, searchRmax, searchPhmin, searchPhmax, searchThmin, searchThmax;
+    FLOAT R2, R, phi, theta;
+    int j;
+    R2 = 0;
+    for (j = 0; j < 3; j++)
+        R2 += searchcenter[j] * searchcenter[j];
+    R = sqrt(R2);
+    phi = atan2(searchcenter[1], searchcenter[0]);
+    if (phi < 0.0)
+        phi = phi + 2.0 * M_PI;
+    theta = asin(searchcenter[2] / R);
+    FLOAT thetamin, dphi, dtheta;
+    thetamin = -0.5 * M_PI;
+    int ii;
+    dphi = All.DustGasMechAngle / 180. * M_PI;
+    dtheta = dphi * 2.;
+#ifdef LOGMESH
+    int Rn;
+    FLOAT Rmin, dxiR;
+    Rmin = 0.01;
+    nR = 10;
+    dxiR = log10(All.BarrierDistance / Rmin) / nR;
+    searchRmin = Rmin * pow(10.0, ii * dxiR);
+    searchRmax = Rmin * pow(10.0, (ii + 1) * dxiR);
+#else
+    ii = floor(R / All.DustGasMechStep);
+    searchRmin = ii * All.DustGasMechStep;
+    searchRmax = (ii + 1) * All.DustGasMechStep;
+#endif
+    searchPhmin = floor(phi / dphi) * dphi;
+    searchPhmax = searchPhmin + dphi;
+    searchThmin = floor(theta / dtheta) * dtheta;
+    searchThmax = searchThmin + dtheta;
+    int numngb, i;
+    int no, p;
+    struct NODE* this;
+    numngb = 0;
+    no = *startnode;
+    FLOAT x[8], y[8], z[4], Xmin, Xmax, Ymin, Ymax, Zmin, Zmax;
+    while (no >= 0)
+    {
+        if (no < All.MaxPart)
+        {
+            p = no;
+            no = Nextnode[no];
+            if (P[p].Type != ptype)
+                continue;
+            R = sqrt(
+                P[p].Pos[0] * P[p].Pos[0] + P[p].Pos[1] * P[p].Pos[1] + P[p].Pos[2] * P[p].Pos[2]);
+            phi = atan2(P[p].Pos[1], P[p].Pos[0]);
+            if (phi < 0.0)
+                phi = phi + 2.0 * M_PI;
+            theta = asin(P[p].Pos[2] / R);
+
+            if (R < searchRmin)
+                continue;
+            if (R > searchRmax)
+                continue;
+            if (phi < searchPhmin)
+                continue;
+            if (phi > searchPhmax)
+                continue;
+            if (theta < searchThmin)
+                continue;
+            if (theta > searchThmax)
+                continue;
+            // printf("%f %f %f  %f %f %i\n",P[p].Pos[0],P[p].Pos[1], P[p].Pos[2],R,phi,P[p].Type);
+            Ngblist[numngb++] = p;
+        }
+        else
+        {
+            if (no >= All.MaxPart + MaxNodes)
+            {
+                Exportflag[DomainTask[no - (All.MaxPart + MaxNodes)]] = 1;
+                no = Nextnode[no - MaxNodes];
+                continue;
+            }
+            this = &Nodes[no];
+            no = this->u.d.sibling;
+            x[0] = searchRmin * cos(searchPhmin) * cos(searchThmin);
+            x[1] = searchRmax * cos(searchPhmin) * cos(searchThmin);
+            x[2] = searchRmin * cos(searchPhmax) * cos(searchThmin);
+            x[3] = searchRmax * cos(searchPhmax) * cos(searchThmin);
+            x[4] = searchRmin * cos(searchPhmin) * cos(searchThmax);
+            x[5] = searchRmax * cos(searchPhmin) * cos(searchThmax);
+            x[6] = searchRmin * cos(searchPhmax) * cos(searchThmax);
+            x[7] = searchRmax * cos(searchPhmax) * cos(searchThmax);
+            y[0] = searchRmin * sin(searchPhmin) * cos(searchThmin);
+            y[1] = searchRmax * sin(searchPhmin) * cos(searchThmin);
+            y[2] = searchRmin * sin(searchPhmax) * cos(searchThmin);
+            y[3] = searchRmax * sin(searchPhmax) * cos(searchThmin);
+            y[4] = searchRmin * sin(searchPhmin) * cos(searchThmax);
+            y[5] = searchRmax * sin(searchPhmin) * cos(searchThmax);
+            y[6] = searchRmin * sin(searchPhmax) * cos(searchThmax);
+            y[7] = searchRmax * sin(searchPhmax) * cos(searchThmax);
+            z[0] = searchRmin * sin(searchThmin);
+            z[1] = searchRmax * sin(searchThmin);
+            z[2] = searchRmin * sin(searchThmax);
+            z[3] = searchRmax * sin(searchThmax);
+            Xmax = Ymax = Zmax = -All.BarrierDistance;
+            Xmin = Ymin = Zmin = All.BarrierDistance;
+            for (i = 0; i < 4; i++)
+            {
+                if (x[i] > Xmax)
+                    Xmax = x[i];
+                else if (x[i] < Xmin)
+                    Xmin = x[i];
+                if (y[i] > Ymax)
+                    Ymax = y[i];
+                else if (y[i] < Ymin)
+                    Ymin = y[i];
+                if (z[i] > Zmax)
+                    Zmax = z[i];
+                else if (z[i] < Zmin)
+                    Zmin = z[i];
+            }
+            if ((this->center[0] + 0.5 * this->len) < (Xmin))
+                continue;
+            if ((this->center[0] - 0.5 * this->len) > (Xmax))
+                continue;
+            if ((this->center[1] + 0.5 * this->len) < (Ymin))
+                continue;
+            if ((this->center[1] - 0.5 * this->len) > (Ymax))
+                continue;
+            if ((this->center[2] + 0.5 * this->len) < (Zmin))
+                continue;
+            if ((this->center[2] - 0.5 * this->len) > (Zmax))
+                continue;
+            no = this->u.d.nextnode;
         }
     }
 
@@ -333,4 +478,3 @@ void ngb_treebuild(void)
 {
     force_treebuild(N_gas);
 }
-

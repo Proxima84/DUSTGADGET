@@ -151,15 +151,7 @@ void fill_write_buffer(enum iofields blocknr, int* startindex, int pc, int type)
     int n, k, pindex;
     float* fp;
     int* ip;
-#ifdef PMGRID
-    double dt_gravkick_pm = 0;
-#endif
     double dt_gravkick, dt_hydrokick;
-
-#ifdef PMGRID
-    dt_gravkick_pm
-        = (All.Ti_Current - (All.PM_Ti_begstep + All.PM_Ti_endstep) / 2) * All.Timebase_interval;
-#endif
     fp = CommBuffer;
     ip = CommBuffer;
 
@@ -225,7 +217,7 @@ void fill_write_buffer(enum iofields blocknr, int* startindex, int pc, int type)
             for (n = 0; n < pc; pindex++)
                 if (P[pindex].Type == type)
                 {
-#ifdef ISOTHERM_EQS
+#if defined(SAVETEMP_LTR) || defined(ISOTHERM_EQS)
                     *fp++ = SphP[pindex].Entropy;
 #else
                     *fp++ = dmax(All.MinEgySpec, SphP[pindex].Entropy / GAMMA_MINUS1

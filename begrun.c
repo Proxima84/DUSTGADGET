@@ -69,13 +69,14 @@ void begrun(void)
         All.MaxNumNgbDeviation = all.MaxNumNgbDeviation;
         All.ArtBulkViscConst = all.ArtBulkViscConst;
         All.CourantFac = all.CourantFac;
-        All.InitGasTemp = all.InitGasTemp;
-        All.MinGasTemp = all.MinGasTemp;
-        for (i = 0; i < 3; i++)
-            All.ForceSoftening[i] = all.ForceSoftening[i];
+        All.InitGasTemp=all.InitGasTemp;
+        All.MinGasTemp=all.MinGasTemp;
+        for(i=0;i<3;i++)
+           All.ForceSoftening[i] = all.ForceSoftening[i];
         All.DustGasMechStep = all.DustGasMechStep;
-        All.DustSize = all.DustSize;
-        All.DustRho = all.DustRho;
+        All.DustGasMechAngle = all.DustGasMechAngle;
+        All.DustSize = all.DustSize/All.UnitLength_in_cm;
+        All.DustRho = all.DustRho/All.UnitDensity_in_cgs;
         All.HsmlConstant = all.HsmlConstant;
         All.MinGasHsml = all.MinGasHsml;
         All.BarrierDistance = all.BarrierDistance;
@@ -90,6 +91,7 @@ void begrun(void)
             readjust_timebase(All.TimeMax, all.TimeMax);
     }
     All.Ti_nextoutput = find_next_outputtime(All.Ti_Current);
+
 }
 
 /*! Computes conversion factors between internal code units and the
@@ -312,6 +314,10 @@ void read_parameter_file(char* fname)
         strcpy(tag[nt], "DustGasMechStep");
         addr[nt] = &All.DustGasMechStep;
         id[nt++] = DOUBLE;
+ 
+        strcpy(tag[nt], "DustGasMechAngle");
+        addr[nt] = &All.DustGasMechAngle;
+        id[nt++] = DOUBLE;
 
         strcpy(tag[nt], "DustSize");
         addr[nt] = &All.DustSize;
@@ -513,4 +519,3 @@ void readjust_timebase(double TimeMax_old, double TimeMax_new)
 
     All.TimeMax = TimeMax_new;
 }
-

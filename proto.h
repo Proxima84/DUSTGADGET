@@ -130,6 +130,7 @@ void   ngb_treefree(void);
 void   ngb_treesearch(int);
 void   ngb_treesearch_pairs(int);
 void   ngb_update_nodes(void);
+int    ngb_treefind_rad(FLOAT searchcenter[3],int *startnode, int ptype);
 
 void   open_outputfiles(void);
 
@@ -160,4 +161,3 @@ void   terminate_processes(void);
 
 void   write_file(char *fname, int readTask, int lastTask);
 void   write_pid_file(void);
-

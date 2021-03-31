@@ -117,7 +117,10 @@ typedef  long long  peanokey;    /*!< defines the variable type used for Peano-H
 #define  KERNEL_COEFF_4  16.0
 #define  KERNEL_COEFF_5  2.666666667
 #define  KERNEL_COEFF_6  (-8) 
-#define  NORM_COEFF      1                /*!< Coefficient for kernel normalization. Note:  4.0/3 * PI = 4.188790204786 */ 
+#define  NORM_COEFF      1                
+#ifdef LPSKHEMA	
+#define  KERNEL_COEFF_7  12.0
+#endif
 #else
 #define  NUMDIMS 3                                      /*!< For 3D-normalized kernel */
 #define  KERNEL_COEFF_1  2.546479089470                 /*!< Coefficients for SPH spline kernel and its derivative */ 
@@ -126,7 +129,10 @@ typedef  long long  peanokey;    /*!< defines the variable type used for Peano-H
 #define  KERNEL_COEFF_4  30.557749073644
 #define  KERNEL_COEFF_5  5.092958178941
 #define  KERNEL_COEFF_6  (-15.278874536822)  
-#define  NORM_COEFF      4.188790204786                 /*!< Coefficient for kernel normalization. Note:  4.0/3 * PI = 4.188790204786 */ 
+#define  NORM_COEFF      4.188790204786  /*!< Coefficient for kernel normalization. Note:  4.0/3 * PI = 4.188790204786 */ 
+#ifdef LPSKHEMA	
+#define  KERNEL_COEFF_7  4.4444444
+#endif               
 #endif
 
 extern int ThisTask;		/*!< the rank of the local processor */
@@ -318,6 +324,7 @@ extern struct global_data_all_processes
   FLOAT HsmlConstant;          /*!< constant smoothing length if it is determined*/
 
   double DustGasMechStep;
+  double DustGasMechAngle;
   double DustSize;
   double DustRho;
   double ForceSoftening[3];     /*!< current (comoving) gravitational softening lengths for each particle type */
@@ -392,15 +399,18 @@ extern struct sph_particle_data
   FLOAT DhsmlDensityFactor;     /*!< correction factor needed in the equation of motion of the conservative entropy formulation of SPH */
 #endif
   FLOAT MaxSignalVel;           /*!< maximum "signal velocity" occuring for this particle */
-
+#if !defined(MKSKHEMA) && !defined(LPSKHEMA)
   FLOAT GasVelMid[3];	        /*Middle gas velocity in cell for calculation of drag force*/
   FLOAT DustVelMid[3];          /*Middle dust velocity in cell for calculation of drag force*/
+  FLOAT GasGravMid[3];	        /*Middle gas gravitation acceleration in cell for calculation of drag force*/
+  FLOAT DustGravMid[3];          /*Middle dust gravitation acceleration in cell for calculation of drag force*/
   FLOAT HydroAccelMid[3];       /*Middle hydro acceleration in cell for calculation of drag force*/
   FLOAT GasDensity;             /*Middle gas density in cell for calculation of drag force*/
   FLOAT DustDensity;            /*Middle dust density in cell for calculation of drag force*/
   FLOAT SoundSpeedMid;          /*Middle sound speed in cell for calculation of drag force*/
   int DustNumber;                /*Middle dust number in cell for calculation of drag force*/
   int GasNumber;                  /*Middle gas number in cell for calculation of drag force*/
+#endif
 #ifdef HSMLCONSTANT
   FLOAT   DustGasNgb;
 #endif
@@ -531,7 +541,7 @@ extern struct densdata_in
   int Index;
   int Task;
   int Type;
-  //  int id;
+  int id;
 }
  *DensDataIn,                   /*!< holds particle data for SPH density computation to be exported to other processors */
  *DensDataGet;                  /*!< holds imported particle data for SPH density computation */
@@ -543,8 +553,7 @@ extern struct densdata_out
 #ifndef HSMLCONSTANT
   FLOAT DhsmlDensity;
 #endif
-  FLOAT Ngb;
-  
+  FLOAT Ngb;  
 }
  *DensDataResult,               /*!< stores the locally computed SPH density results for imported particles */
  *DensDataPartialResult;        /*!< imported partial SPH density results from other processors */
@@ -565,8 +574,7 @@ extern struct hydrodata_in
   int Timestep;
   int   Task;
   int   Index;
- // int id;
-
+ int id;
 }
  *HydroDataIn,                  /*!< holds particle data for SPH hydro-force computation to be exported to other processors */
  *HydroDataGet;                 /*!< holds imported particle data for SPH hydro-force computation */
@@ -581,7 +589,7 @@ extern struct hydrodata_out
 }
  *HydroDataResult,              /*!< stores the locally computed SPH hydro results for imported particles */
  *HydroDataPartialResult;       /*!< imported partial SPH hydro-force results from other processors */
-
+//#if !defined(MKSKHEMA) && !defined(LPSKHEMA)
 extern struct dragdata_in
 {
   FLOAT Pos[3];
@@ -591,6 +599,7 @@ extern struct dragdata_in
   int   Timestep;
   int   Task;
   int   Index; 
+  int id;
 }
  *DragDataIn,                  /*!< holds particle data for SPH drag-force computation to be exported to other processors */
  *DragDataGet;                 /*!< holds imported particle data for SPH drag-force computation */
@@ -600,17 +609,18 @@ extern struct dragdata_out
   FLOAT GasVelMid[3];
   FLOAT DustVelMid[3];
   FLOAT HydroAccelMid[3];
+  FLOAT GasGravMid[3];	        /*Middle gas gravitation acceleration in cell for calculation of drag force*/
+  FLOAT DustGravMid[3];          /*Middle dust gravitation acceleration in cell for calculation of drag force*/
   FLOAT GasDensity;
   FLOAT DustDensity;
   FLOAT SoundSpeedMid;
   int DustNumber;
   int GasNumber;
+
 #ifdef HSMLCONSTANT
   FLOAT   DustGasNgb;
 #endif
- 
 }
  *DragDataResult,              /*!< stores the locally computed SPH drag results for imported particles */
  *DragDataPartialResult;       /*!< imported partial SPH drag-force results from other processors */
-
 

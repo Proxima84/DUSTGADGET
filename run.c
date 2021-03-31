@@ -33,11 +33,12 @@ void run(void)
                                            * If needed, this function will also write an output file
                                            * at the desired time.
                                            */
-        if (ThisTask == 0)
-        {
-            printf("\nBegin Step %d, Time: %g, Systemstep: %g\n", All.NumCurrentTiStep, All.Time,
-                All.TimeStep);
-        }
+
+         if(ThisTask == 0)
+         {
+           printf("\nBegin Step %d, Time: %g, Systemstep: %g\n", All.NumCurrentTiStep, All.Time,
+         All.TimeStep);
+          }
         domain_Decomposition(); /* do domain decomposition if needed */
         compute_accelerations(0); /* compute accelerations for
                                    * the particles that are to be advanced
@@ -199,4 +200,3 @@ int find_next_outputtime(int ti_curr)
 
     return ti_next;
 }
-

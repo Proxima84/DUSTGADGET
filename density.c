@@ -91,8 +91,7 @@ void density(void)
                             DensDataIn[nexport].Vel[1] = SphP[i].VelPred[1];
                             DensDataIn[nexport].Vel[2] = SphP[i].VelPred[2];
                             DensDataIn[nexport].Hsml = SphP[i].Hsml;
-                            DensDataIn[nexport].Type = P[i].Type;
-                            //  DensDataIn[nexport].id = P[i].ID;
+                            DensDataIn[nexport].Type = P[i].Type;  
                             DensDataIn[nexport].Index = i;
                             DensDataIn[nexport].Task = j;
                             nexport++;
@@ -351,11 +350,7 @@ void density_evaluate(int target, int mode)
     double dvx, dvy, dvz, rotv[3];
     double weighted_numngb;
     FLOAT *pos, *vel;
-// int id;
-// TODO
-/*FLOAT X[3];
-int ix[3],numngbD;*/
-// TODO
+
 #ifndef HSMLCONSTANT
     double dhsmlrho;
     dhsmlrho = 0;
@@ -366,15 +361,15 @@ int ix[3],numngbD;*/
         vel = SphP[target].VelPred;
         h = SphP[target].Hsml;
         type = P[target].Type;
-        // id=P[target].ID;
+
     }
     else
     {
         pos = DensDataGet[target].Pos;
         vel = DensDataGet[target].Vel;
-        h = DensDataGet[target].Hsml;
-        // s id = DensDataGet[target].id;
-        type = P[target].Type;
+        h = DensDataGet[target].Hsml;     
+        type = DensDataGet[target].Type;
+	
     }
 
     h2 = h * h;
@@ -385,7 +380,7 @@ int ix[3],numngbD;*/
     hinv3 = hinv * hinv * hinv;
 #endif
     hinv4 = hinv3 * hinv;
-    rho = divv = rotv[0] = rotv[1] = rotv[2] = 0;
+    rho = divv = rotv[0] = rotv[1] = rotv[2] = 0.;
     weighted_numngb = 0;
     startnode = All.MaxPart;
 
@@ -393,7 +388,7 @@ int ix[3],numngbD;*/
     do
     {
         numngb_inbox = ngb_treefind_variable(&pos[0], h, &startnode, type);
-        // printf("%i %i %i %i\n",id,numngb_inbox,numngbD,type);
+
         for (n = 0; n < numngb_inbox; n++)
         {
             j = Ngblist[n];
@@ -413,7 +408,7 @@ int ix[3],numngbD;*/
 
                 if (u < 0.5)
                 {
-                    wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - 1) * u * u);
+                    wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - 1.0) * u * u);
                     dwk = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
                 }
                 else
@@ -443,16 +438,16 @@ int ix[3],numngbD;*/
                     rotv[0] += fac * (dz * dvy - dy * dvz);
                     rotv[1] += fac * (dx * dvz - dz * dvx);
                     rotv[2] += fac * (dy * dvx - dx * dvy);
-                    // if(id==66554)
-                    // printf("fac=%f dx=%f dy=%f dz=%f dvx=%f dvy=%f
-                    // dvz=%f\n",fac,dx,dy,dz,dvx,dvy,dvz);
+                    
+
                 }
             }
         }
     } while (startnode >= 0);
+
     if (mode == 0)
     {
-
+       
         SphP[target].Density = rho;
         SphP[target].DivVel = divv;
 #ifndef HSMLCONSTANT

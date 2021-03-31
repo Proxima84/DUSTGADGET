@@ -89,8 +89,6 @@ void advance_and_find_timesteps(void)
                             - dt_hydrokick2 * SphP[i].HydroAccel[j]
                             - SphP[i].DragAccel[j] * dt_hydrokick2;
                     }
-
-
 /* In case of cooling, we prevent that the entropy (and
    hence temperature decreases by more than a factor 0.5 */
 #ifndef SAVETEMP_LTR
@@ -137,12 +135,12 @@ void advance_and_find_timesteps(void)
                         Tatm = All.CentralTemperature * pow(All.CentralRadius * SOLAR_RADIUS * AU
                                                                 / All.UnitLength_in_cm / (2. * R),
                                                             Aindex);
-                        Tz += (Tatm - Tmid) * pow(sin(M_PI * P[i].Pos[2] / 2. / hz), 4);
-                    }
-                    SphP[i].Entropy = BOLTZMANN * Tz / meanweight / PROTONMASS * All.UnitMass_in_g
-                        / All.UnitEnergy_in_cgs;
-                    // if(P[i].ID==41994)
-                    //  printf("Entropy: %f %f\n",SphP[i].Entropy,Tz);
+                        Tz += (Tatm - Tmid) * pow(sin(M_PI * P[i].Pos[2] / 3. / hz), 4);
+                        if(fabs(P[i].Pos[2])>(3.*hz))
+                           Tz=Tatm;
+                    }                    
+                    SphP[i].Entropy =  BOLTZMANN * Tz / meanweight / PROTONMASS
+                        * All.UnitMass_in_g / All.UnitEnergy_in_cgs;
                     SphP[i].DtEntropy = 0;
 #endif
                 }
@@ -229,8 +227,8 @@ int get_timestep(int p, /*!< particle index */
             printf("drag-frc=(%g|%g|%g)\n", SphP[p].DragAccel[0], SphP[p].DragAccel[1],
                 SphP[p].DragAccel[2]);
             if (P[p].Type == 0)
-                printf("hydro-frc=(%g|%g|%g) entropy=%g\n", SphP[p].HydroAccel[0],
-                    SphP[p].HydroAccel[1], SphP[p].HydroAccel[2], SphP[p].Entropy);
+                printf("hydro-frc=(%g|%g|%g) entropy=%g\n", SphP[p].HydroAccel[0], SphP[p].HydroAccel[1],
+                    SphP[p].HydroAccel[2],SphP[p].Entropy);
         }
         fflush(stdout);
         endrun(818);

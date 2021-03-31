@@ -60,8 +60,8 @@ void hydro_force(void)
             if (P[i].Type == 0)
             {
                 if (P[i].Ti_endstep == All.Ti_Current)
-                {
-                    ndone++;
+                {                     
+                    ndone++;             
                     for (j = 0; j < NTask; j++)
                         Exportflag[j] = 0;
 
@@ -78,7 +78,7 @@ void hydro_force(void)
                             }
                             HydroDataIn[nexport].Hsml = SphP[i].Hsml;
                             HydroDataIn[nexport].Mass = P[i].Mass;
-// HydroDataIn[nexport].id = P[i].ID;
+                  
 #ifndef HSMLCONSTANT
                             HydroDataIn[nexport].DhsmlDensityFactor = SphP[i].DhsmlDensityFactor;
 #endif
@@ -238,7 +238,7 @@ void hydro_force(void)
  */
 void hydro_evaluate(int target, int mode)
 {
-    int j, k, n, startnode, numngb; //,id;
+    int j, k, n, startnode, numngb;//,id;
     FLOAT *pos, *vel;
     FLOAT h_i, rho, pressure, f1, f2;
     double acc[3], dtEntropy;
@@ -248,7 +248,7 @@ void hydro_evaluate(int target, int mode)
     double hfc, dwk_i, vdotr, vdotr2, visc, mu_ij, rho_ij, vsig;
     double h_j, dwk_j, r, r2, u, hfc_visc;
     double dt, mass, maxSignalVel, timestep;
-
+    
 #ifndef HSMLCONSTANT
     FLOAT dhsmlDensityFactor;
 #endif
@@ -266,8 +266,7 @@ void hydro_evaluate(int target, int mode)
         timestep = P[target].Ti_endstep - P[target].Ti_begstep;
         soundspeed_i = sqrt(GAMMA * pressure / rho);
         f1 = fabs(SphP[target].DivVel) / (fabs(SphP[target].DivVel) + SphP[target].CurlVel
-                                             + 0.0001 * soundspeed_i / SphP[target].Hsml);
-        // id=P[target].ID;
+                                             + 0.0001 * soundspeed_i / SphP[target].Hsml);      
     }
     else
     {
@@ -283,11 +282,10 @@ void hydro_evaluate(int target, int mode)
         timestep = HydroDataGet[target].Timestep;
         soundspeed_i = sqrt(GAMMA * pressure / rho);
         f1 = HydroDataGet[target].F1;
-        // id = HydroDataGet[target].id;
     }
     /* initialize variables before SPH loop is started */
-    acc[0] = acc[1] = acc[2] = dtEntropy = 0;
-    maxSignalVel = 0;
+    acc[0] = acc[1] = acc[2] = dtEntropy = 0.;
+    maxSignalVel = 0.;
 #ifdef HSMLCONSTANT
     p_over_rho2_i = pressure / (rho * rho);
 #else
@@ -395,10 +393,11 @@ void hydro_evaluate(int target, int mode)
 
                     hfc = hfc_visc
                         + P[j].Mass * (p_over_rho2_i * dwk_i + p_over_rho2_j * dwk_j) / r;
-
+                   
                     acc[0] -= hfc * dx;
                     acc[1] -= hfc * dy;
                     acc[2] -= hfc * dz;
+ 
 #if !defined(SAVETEMP_LTR) && !defined(ISOTHERM_EQS)
                     dtEntropy += 0.5 * hfc_visc * vdotr2;
 #endif

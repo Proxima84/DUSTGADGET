@@ -37,11 +37,11 @@ void read_ic(char* fname)
     sprintf(buf, "%s", fname);
     read_file(buf, masterTask, lastTask);
     MPI_Barrier(MPI_COMM_WORLD);
-    if (N_gas == 0)
+    if(N_gas==0)
     {
-        printf("\nno gas or dust matter in initial condition file\n");
-        fflush(stdout);
-        endrun(115);
+      printf("\nno gas or dust matter in initial condition file\n");
+      fflush(stdout);
+      endrun(115);
     }
     /* this makes sure that masses are initialized in the case that the mass-block
        is completely empty */
@@ -228,6 +228,7 @@ void read_file(char* fname, int readTask, int lastTask)
             * (All.TotN_gas / NTask); /* sets the maximum number of particles that may
                                          reside on a processor */
         allocate_memory();
+
     }
 
     if (ThisTask == readTask)
@@ -419,4 +420,3 @@ void distribute_file(
         }
     }
 }
-

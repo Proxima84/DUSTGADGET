@@ -292,8 +292,7 @@ int ngb_treefind_rad(FLOAT searchcenter[3], int* startnode, int ptype)
     if (phi < 0.0)
         phi = phi + 2.0 * M_PI;
     theta = asin(searchcenter[2] / R);
-    FLOAT thetamin, dphi, dtheta;
-    thetamin = -0.5 * M_PI;
+    FLOAT dphi, dtheta;   
     int ii;
     dphi = All.DustGasMechAngle / 180. * M_PI;
     dtheta = dphi * 2.;

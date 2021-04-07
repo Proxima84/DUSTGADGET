@@ -287,15 +287,13 @@ void interactGas_evaluate(int target, int mode)
     int j, k, n, startnode, numngb;
     FLOAT* pos;
     double V_a[3], H_a[3], rho_j, rho_a, U_j[3], soundspeed_a, G_a[3], G_j[3];
-    int Ni, Li, id;
+    int Ni, Li;
     if (mode == 0)
     {
         pos = P[target].Pos;
-        id = P[target].ID;
     }
     else
     {
-        id = DragDataGet[target].id;
         pos = DragDataGet[target].Pos;
     }
 #ifdef DIM1

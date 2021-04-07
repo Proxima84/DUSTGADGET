@@ -129,14 +129,14 @@ void advance_and_find_timesteps(void)
                     if (Aindex > 0)
                     {
                         double hz, Tatm;
-                        hz = heightScale * sqrt(BOLTZMANN * GAMMA * Tmid * R * R * R / meanweight
+                        hz =  sqrt(BOLTZMANN * GAMMA * Tmid * R * R * R / meanweight
                                                / PROTONMASS / All.G / All.CentralMass)
                             / All.UnitVelocity_in_cm_per_s;
                         Tatm = All.CentralTemperature * pow(All.CentralRadius * SOLAR_RADIUS * AU
                                                                 / All.UnitLength_in_cm / (2. * R),
                                                             Aindex);
-                        Tz += (Tatm - Tmid) * pow(sin(M_PI * P[i].Pos[2] / 3. / hz), 4);
-                        if(fabs(P[i].Pos[2])>(3.*hz))
+                        Tz += (Tatm - Tmid) * pow(sin(M_PI * P[i].Pos[2] / heightScale/2. / hz), 4);
+                        if(fabs(P[i].Pos[2])>(heightScale*hz))
                            Tz=Tatm;
                     }                    
                     SphP[i].Entropy =  BOLTZMANN * Tz / meanweight / PROTONMASS

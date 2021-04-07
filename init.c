@@ -400,7 +400,7 @@ int j;
 #ifdef DECART
     numngb_inbox = ngb_treefind_cell(&X[0], 0.5 * All.DustGasMechStep, &startnode, !type); 
 #else
-     numngb = ngb_treefind_rad(&pos[0], &startnode, !type);
+     numngb_inbox = ngb_treefind_rad(&pos[0], &startnode, !type);
 #endif     
 #endif
      numngb+=numngb_inbox;

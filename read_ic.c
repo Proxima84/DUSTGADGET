@@ -83,8 +83,8 @@ void read_ic(char* fname)
         }
     }
 
-    for (i = 0; i < N_gas; i++)
-        SphP[i].Entropy = dmax(All.MinEgySpec, SphP[i].Entropy);
+   /* for (i = 0; i < N_gas; i++)
+        SphP[i].Entropy = dmax(All.MinEgySpec, SphP[i].Entropy);*/
 
     MPI_Barrier(MPI_COMM_WORLD);
     if (ThisTask == 0)

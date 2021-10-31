@@ -214,7 +214,7 @@ void interactionGas()
     for (i = 0; i < N_gas; i++)
         if ((P[i].Ti_endstep == All.Ti_Current) && (P[i].Type == 0))
         {
-#ifdef SPH_BND_PARTICLES
+#if defined(SPH_BND_PARTICLES) || defined(SHEREBORDER)
             if (P[i].ID == 0)
             {
                 SphP[i].DtDragEntropy = 0;
@@ -276,7 +276,7 @@ void interactionGas()
                 else
                     for (j = 0; j < 3; j++)
                         SphP[i].DragAccel[j] = 0;
-#ifdef SPH_BND_PARTICLES
+#if defined(SPH_BND_PARTICLES) || defined(SHEREBORDER)
             }
 #endif
         }
@@ -371,7 +371,7 @@ void interactGas_evaluate(int target, int mode)
             {
                 j = Ngblist[n];
                 rho_a += SphP[j].Density;
-                soundspeed_a += sqrt(GAMMA * SphP[j].Pressure / SphP[j].Density);
+                soundspeed_a += sqrt(GAMMA * fabs(SphP[j].Pressure) / SphP[j].Density);
                 for (k = 0; k < 3; k++)
                 {
                     V_a[k] += SphP[j].VelPred[k];
@@ -610,7 +610,7 @@ void interactionDust()
     for (i = 0; i < N_gas; i++)
         if ((P[i].Ti_endstep == All.Ti_Current) && (P[i].Type == 1))
         {
-#ifdef SPH_BND_PARTICLES
+#if defined(SPH_BND_PARTICLES) || defined(SHEREBORDER)
             if (P[i].ID == 0)
                 for (k = 0; k < 3; k++)
                     SphP[i].DragAccel[k] = 0;
@@ -622,7 +622,7 @@ void interactionDust()
                     SphP[i].SoundSpeedMid /= SphP[i].GasNumber;
                     SphP[i].GasDensity /= SphP[i].GasNumber;
                     SphP[i].DustDensity /= SphP[i].DustNumber;
-                    t_st = All.DustRho * P[i].Radius/ SphP[i].SoundSpeedMid/SphP[i].GasDensity;
+                    t_st = All.DustRho * P[i].Radius/ SphP[i].SoundSpeedMid/SphP[i].GasDensity;               
                     eps = All.MassTable[1] * SphP[i].DustNumber * 1. / SphP[i].GasNumber/ All.MassTable[0]; 
  		    tau = (P[i].Ti_endstep - P[i].Ti_begstep) * All.Timebase_interval;                          
                     Ks = SphP[i].DustDensity / t_st;                   
@@ -633,7 +633,7 @@ void interactionDust()
                         SphP[i].GasGravMid[j] /= SphP[i].GasNumber;
                         SphP[i].DustVelMid[j] /= SphP[i].DustNumber;
 			SphP[i].DustGravMid[j] /= SphP[i].DustNumber;
-                        xn[j] = SphP[i].GasVelMid[j] - SphP[i].DustVelMid[j];
+                        xn[j] = SphP[i].GasVelMid[j] - SphP[i].DustVelMid[j];	
                         yn[j] = SphP[i].GasVelMid[j] + eps * SphP[i].DustVelMid[j];
                          xn1[j] = (xn[j] + (SphP[i].HydroAccelMid[j] +SphP[i].GasGravMid[j]-SphP[i].DustGravMid[j])*tau)
                                 / (1. + (eps + 1.) * tau / t_st);
@@ -641,13 +641,15 @@ void interactionDust()
                         V_ast[j] = (yn1[j] + eps * xn1[j]) / (1. + eps);
                         U_n1[j] = (SphP[i].VelPred[j] + tau * V_ast[j] / t_st + P[i].GravAccel[j]*tau)
                             / (1. + tau / t_st);
+                       // if(P[i].ID==576298)
+                         //    printf("i=%i j=%i Ks=%f dens=%f Vast=%f U=%f\n",i,j,Ks,SphP[i].DustDensity,V_ast[j],U_n1[j]);
                         SphP[i].DragAccel[j] = Ks/SphP[i].DustDensity * (V_ast[j] - U_n1[j]);
                     }
                 }
                 else
                     for (j = 0; j < 3; j++)
                         SphP[i].DragAccel[j] = 0;
-#ifdef SPH_BND_PARTICLES
+#if defined(SPH_BND_PARTICLES) || defined(SHEREBORDER)
             }
 #endif
         }
@@ -714,7 +716,7 @@ void interactDust_evaluate(int target, int mode)
         for (n = 0; n < numngb; n++)
         {
             j = Ngblist[n];
-            soundspeed_a += sqrt(GAMMA * SphP[j].Pressure / SphP[j].Density);
+            soundspeed_a += sqrt(GAMMA * fabs(SphP[j].Pressure) / SphP[j].Density);
             rho_a += SphP[j].Density;
             for (k = 0; k < 3; k++)
             {

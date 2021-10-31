@@ -48,7 +48,7 @@ typedef  long long  peanokey;    /*!< defines the variable type used for Peano-H
  #define  Tcoef       0.33437 /* for optical depth = 1 in optical spectra from Chiang & Goldreich (1997)*/
  #define  heightScale 3.0 /*the scale of half-thickness of the disk*/
  #else
- #define  GAMMA     1.4//(5.0/3)   /*!< adiabatic index of simulated gas */
+ #define  GAMMA     4.0/3.0//(5.0/3)   /*!< adiabatic index of simulated gas */
  #endif
 #else
  #define  GAMMA         1.0     /*!< index for isothermal gas */

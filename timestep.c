@@ -26,7 +26,7 @@ void advance_and_find_timesteps(void)
     double dt_entr2, dt_gravkick, dt_hydrokick, dt_gravkick2, dt_hydrokick2;
     double aphys;
 #ifndef SAVETEMP_LTR
-    double minentropy, dt_entr;
+    double dt_entr;
 #endif
     FLOAT dv[3];
     dt_displacement = All.MaxSizeTimestep;
@@ -89,15 +89,16 @@ void advance_and_find_timesteps(void)
                             - dt_hydrokick2 * SphP[i].HydroAccel[j]
                             - SphP[i].DragAccel[j] * dt_hydrokick2;
                     }
+
 /* In case of cooling, we prevent that the entropy (and
    hence temperature decreases by more than a factor 0.5 */
 #ifndef SAVETEMP_LTR
-                    if (SphP[i].DtEntropy * dt_entr > -0.5 * SphP[i].Entropy)
+                   // if (SphP[i].DtEntropy * dt_entr > -0.5 * SphP[i].Entropy)
                         SphP[i].Entropy += SphP[i].DtEntropy * dt_entr;
-                    else
-                        SphP[i].Entropy *= 0.5;
+                   // else
+                     //   SphP[i].Entropy *= 0.5;
 
-                    if (All.MinEgySpec)
+                  /*  if (All.MinEgySpec)
                     {
                         minentropy
                             = All.MinEgySpec * GAMMA_MINUS1 / pow(SphP[i].Density, GAMMA_MINUS1);
@@ -106,7 +107,7 @@ void advance_and_find_timesteps(void)
                             SphP[i].Entropy = minentropy;
                             SphP[i].DtEntropy = 0;
                         }
-                    }
+                    }*/
 
                     /* In case the timestep increases in the new step, we
                        make sure that we do not 'overcool' when deriving
@@ -115,8 +116,8 @@ void advance_and_find_timesteps(void)
                        the middle to the end of the current step */
 
                     dt_entr = ti_step / 2 * All.Timebase_interval;
-                    if (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr < 0.5 * SphP[i].Entropy)
-                        SphP[i].DtEntropy = -0.5 * SphP[i].Entropy / dt_entr;
+                    //if (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr < 0.5 * SphP[i].Entropy)
+                     //   SphP[i].DtEntropy = -0.5 * SphP[i].Entropy / dt_entr;
 #else
                     double meanweight, R, Tmid, Tz;
                     meanweight = 4.0 / (1 + 3 * HYDROGEN_MASSFRAC);
@@ -161,6 +162,47 @@ void advance_and_find_timesteps(void)
             }
         }
     }
+#ifdef SHEREBORDER
+ double Rgas,Vgas,Rdust,Vdust;
+ Vgas=0;
+ Rgas=0;
+ Rdust=0;
+ Vdust=0;
+ for (i = 0; i < NumPart; i++)
+ {
+  if(P[i].Type==0)
+  {
+   if(P[i].ID!=0)
+   {
+    Vgas+=P[i].Pos[0]*P[i].Vel[0]+P[i].Pos[1]*P[i].Vel[1]+P[i].Pos[2]*P[i].Vel[2];
+    Rgas+=P[i].Pos[0]*P[i].Pos[0]+P[i].Pos[1]*P[i].Pos[1]+P[i].Pos[2]*P[i].Pos[2];
+   }
+  }
+  else if(P[i].Type==1)
+  {
+   if(P[i].ID!=0)
+   {
+    Vdust+=P[i].Pos[0]*P[i].Vel[0]+P[i].Pos[1]*P[i].Vel[1]+P[i].Pos[2]*P[i].Vel[2];
+    Rdust+=P[i].Pos[0]*P[i].Pos[0]+P[i].Pos[1]*P[i].Pos[1]+P[i].Pos[2]*P[i].Pos[2];
+   }
+  }
+ }
+ for (i = 0; i < NumPart; i++)
+ {
+  if(P[i].Type==0)
+  { 
+   if(P[i].ID==0)
+     for (j = 0; j < 3; j++)     
+       P[i].Vel[j] = Vgas/Rgas*P[i].Pos[j];                       
+  }
+  else if(P[i].Type==1)
+  {
+    if(P[i].ID==0)
+     for (j = 0; j < 3; j++)     
+       P[i].Vel[j] = Vdust/Rdust*P[i].Pos[j];       
+  }
+ }
+#endif
 }
 
 /*! This function normally (for flag==0) returns the maximum allowed timestep

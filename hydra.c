@@ -86,7 +86,7 @@ void hydro_force(void)
                             HydroDataIn[nexport].Pressure = SphP[i].Pressure;
                             HydroDataIn[nexport].Timestep = P[i].Ti_endstep - P[i].Ti_begstep;
                             /* calculation of F1 */
-                            soundspeed_i = sqrt(GAMMA * SphP[i].Pressure / SphP[i].Density);
+                            soundspeed_i = sqrt(GAMMA * fabs(SphP[i].Pressure) / SphP[i].Density);
                             HydroDataIn[nexport].F1 = fabs(SphP[i].DivVel)
                                 / (fabs(SphP[i].DivVel) + SphP[i].CurlVel
                                                           + 0.0001 * soundspeed_i / SphP[i].Hsml);
@@ -264,7 +264,7 @@ void hydro_evaluate(int target, int mode)
         rho = SphP[target].Density;
         pressure = SphP[target].Pressure;
         timestep = P[target].Ti_endstep - P[target].Ti_begstep;
-        soundspeed_i = sqrt(GAMMA * pressure / rho);
+        soundspeed_i = sqrt(GAMMA * fabs(pressure) / rho);
         f1 = fabs(SphP[target].DivVel) / (fabs(SphP[target].DivVel) + SphP[target].CurlVel
                                              + 0.0001 * soundspeed_i / SphP[target].Hsml);      
     }
@@ -280,7 +280,7 @@ void hydro_evaluate(int target, int mode)
         rho = HydroDataGet[target].Density;
         pressure = HydroDataGet[target].Pressure;
         timestep = HydroDataGet[target].Timestep;
-        soundspeed_i = sqrt(GAMMA * pressure / rho);
+        soundspeed_i = sqrt(GAMMA * fabs(pressure) / rho);
         f1 = HydroDataGet[target].F1;
     }
     /* initialize variables before SPH loop is started */
@@ -314,7 +314,7 @@ void hydro_evaluate(int target, int mode)
                 if (r > 0)
                 {
                     p_over_rho2_j = SphP[j].Pressure / (SphP[j].Density * SphP[j].Density);
-                    soundspeed_j = sqrt(GAMMA * p_over_rho2_j * SphP[j].Density);
+                    soundspeed_j = sqrt(GAMMA * fabs(p_over_rho2_j) * SphP[j].Density);
                     dvx = vel[0] - SphP[j].VelPred[0];
                     dvy = vel[1] - SphP[j].VelPred[1];
                     dvz = vel[2] - SphP[j].VelPred[2];

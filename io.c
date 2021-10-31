@@ -220,8 +220,8 @@ void fill_write_buffer(enum iofields blocknr, int* startindex, int pc, int type)
 #if defined(SAVETEMP_LTR) || defined(ISOTHERM_EQS)
                     *fp++ = SphP[pindex].Entropy;
 #else
-                    *fp++ = dmax(All.MinEgySpec, SphP[pindex].Entropy / GAMMA_MINUS1
-                            * pow(SphP[pindex].Density, GAMMA_MINUS1));
+                    *fp++ =  SphP[pindex].Entropy / GAMMA_MINUS1
+                            * pow(SphP[pindex].Density, GAMMA_MINUS1);
 #endif
                     n++;
                 }
